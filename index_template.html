@@ -1,87 +1,529 @@
 <!doctype html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="light" />
         <title>{{web_title}}</title>
         <link
             rel="stylesheet"
             href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
         />
         <style>
-            body {
-                padding-top: 20px;
+            :root {
+                --ink: #17253e;
+                --muted: #68778c;
+                --line: #e7ecf2;
+                --surface: #fff;
+                --bg: #f6f8fc;
+                --blue: #315ee8;
+                --green: #14805e;
+                --red: #c83d4d;
             }
-            .status-indicator {
-                display: inline-block;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                margin-right: 8px;
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--ink);
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    "Helvetica Neue", Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.55;
+            }
+            a {
+                color: var(--blue);
+            }
+            a:hover {
+                color: #1e46bb;
+                text-decoration: none;
+            }
+            a:focus-visible,
+            input:focus-visible {
+                outline: 3px solid #94b7ff;
+                outline-offset: 2px;
+            }
+            main {
+                padding: 44px 0 60px;
+                max-width: 1120px;
+            }
+            .page-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 18px;
+                margin-bottom: 22px;
+            }
+            .page-heading h1 {
+                font-size: 25px;
+                font-weight: 650;
+                letter-spacing: -0.025em;
+                margin: 0;
+            }
+            .page-heading a {
+                font-size: 13px;
+                color: var(--muted);
+            }
+            .workspace {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 190px;
+                gap: 20px;
+                align-items: start;
+            }
+            .summary {
+                grid-column: 2;
+                grid-row: 1;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                background: #fff;
+                padding: 8px 15px;
+            }
+            .metric {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                padding: 15px 0;
+                border-bottom: 1px solid var(--line);
+            }
+            .metric:last-child {
+                border-bottom: 0;
+            }
+            .metric-label {
+                font-size: 12px;
+                color: var(--muted);
+                font-weight: 500;
+            }
+            .metric-value {
+                font-size: 22px;
+                font-weight: 650;
+                line-height: 1.2;
+                font-variant-numeric: tabular-nums;
+            }
+            .metric.ok .metric-value {
+                color: var(--green);
+            }
+            .metric.bad .metric-value {
+                color: var(--red);
+            }
+            .workspace .panel {
+                grid-column: 1;
+                grid-row: 1;
+            }
+            .panel {
+                background: #fff;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            .panel-heading-custom {
+                padding: 20px 22px 18px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+            }
+            .panel-heading-custom h2 {
+                font-size: 17px;
+                letter-spacing: -0.015em;
+                font-weight: 650;
+                margin: 0 0 4px;
+            }
+            .panel-heading-custom p {
+                font-size: 13px;
+                color: var(--muted);
+                margin: 0;
+            }
+            .search {
+                width: 260px;
+                max-width: 100%;
+                height: 39px;
+                border: 1px solid #dfe5ee;
+                border-radius: 9px;
+                padding: 8px 13px;
+                background: #fafbfe;
+                color: var(--ink);
+                font-size: 13px;
+            }
+            .table-wrap {
+                overflow-x: visible;
+            }
+            .services-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 0;
+                min-width: 0;
+                table-layout: auto;
+            }
+            .services-table thead {
+                background: #f8fafd;
+            }
+            .services-table th {
+                text-transform: uppercase;
+                font-size: 11px;
+                letter-spacing: 0.075em;
+                color: #78869a;
+                font-weight: 750;
+                padding: 14px 14px;
+                border-top: 1px solid var(--line);
+                border-bottom: 1px solid var(--line);
+            }
+            .services-table td {
+                padding: 18px 14px;
+                border-bottom: 1px solid #edf0f5;
                 vertical-align: middle;
             }
-            .status-indicator.status-ok {
-                background-color: #28a745; /* Verde: código 2xx */
+            .services-table tbody tr:last-child td {
+                border-bottom: 0;
             }
-            .status-indicator.status-error {
-                background-color: #dc3545; /* Rojo: cualquier otro código */
+            .services-table tbody tr:hover {
+                background: #fafcff;
             }
-            table.services-table th,
-            table.services-table td {
-                vertical-align: middle !important;
+            .service-name {
+                font-weight: 700;
+                color: #23334d;
+                font-size: 14px;
+            }
+            .service-url {
+                display: inline-block;
+                max-width: min(260px, 23vw);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                vertical-align: middle;
+                font-size: 13px;
+            }
+            .external {
+                font-size: 12px;
+                margin-left: 5px;
+                color: #8290a5;
+            }
+            .status {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                border-radius: 7px;
+                padding: 5px 9px;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+            .status:before {
+                content: "";
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: currentColor;
+            }
+            .status-ok {
+                background: #eaf8f1;
+                color: var(--green);
+            }
+            .status-error {
+                background: #fff0f1;
+                color: var(--red);
+            }
+            .timestamp {
+                font-size: 13px;
+                color: var(--muted);
+                white-space: nowrap;
+            }
+            .empty {
+                padding: 32px;
+                text-align: center;
+                color: var(--muted);
+                display: none;
+            }
+            .panel-foot {
+                padding: 14px 14px;
+                border-top: 1px solid var(--line);
+                background: #fcfdff;
+                color: var(--muted);
+                font-size: 12px;
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+            }
+            .footer {
+                display: flex;
+                justify-content: space-between;
+                gap: 16px;
+                margin-top: 30px;
+                color: #78869a;
+                font-size: 12px;
+            }
+            .footer a {
+                color: #5a6b83;
+            }
+            .page-heading a {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .page-heading h1 {
+                min-width: 0;
+            }
+            .services-table th,
+            .services-table td {
+                overflow-wrap: normal;
+            }
+            .services-table td:first-child {
+                overflow-wrap: anywhere;
+            }
+            @media (max-width: 1100px) {
+                .services-table th,
+                .services-table td {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+                .service-url {
+                    max-width: 150px;
+                }
+            }
+            @media (max-width: 650px) {
+                .table-wrap {
+                    overflow-x: auto;
+                }
+                .services-table {
+                    min-width: 650px;
+                }
+                .page-heading {
+                    flex-wrap: wrap;
+                }
+                .page-heading a {
+                    white-space: nowrap;
+                }
+            }
+            @media (max-width: 900px) {
+                .workspace {
+                    grid-template-columns: 1fr;
+                }
+                .summary {
+                    grid-column: 1;
+                    grid-row: 1;
+                    display: grid;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    padding: 0 14px;
+                }
+                .metric {
+                    border-bottom: 0;
+                    border-right: 1px solid var(--line);
+                    padding: 12px;
+                    align-items: flex-start;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+                .metric:last-child {
+                    border-right: 0;
+                }
+                .workspace .panel {
+                    grid-column: 1;
+                    grid-row: 2;
+                }
+            }
+            @media (max-width: 767px) {
+                .container {
+                    padding-left: 16px;
+                    padding-right: 16px;
+                }
+                main {
+                    padding-top: 24px;
+                }
+                .page-heading h1 {
+                    font-size: 21px;
+                }
+                .panel-heading-custom {
+                    padding: 16px;
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+                .search {
+                    width: 100%;
+                }
+                .services-table th,
+                .services-table td {
+                    padding: 14px 18px;
+                }
+                .panel-foot {
+                    padding: 13px 18px;
+                }
+                .footer {
+                    flex-direction: column;
+                    gap: 5px;
+                }
+                .metric {
+                    padding: 12px 7px;
+                }
+                .metric-label {
+                    font-size: 11px;
+                }
+                .metric-value {
+                    font-size: 20px;
+                }
             }
         </style>
     </head>
     <body>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <h1 class="text-center">{{page_title}}</h1>
-                </div>
+        <main class="container">
+            <div class="page-heading">
+                <h1>{{page_title}}</h1>
+                <a
+                    href="https://oeg.fi.upm.es"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Ontology Engineering Group&nbsp;↗</a
+                >
             </div>
-
-            <div class="row" style="margin-top: 20px">
-                <div class="col-md-12">
-                    <table
-                        class="table table-striped table-bordered services-table"
-                    >
-                        <thead>
-                            <tr>
-                                <th>Service</th>
-                                <th>URL</th>
-                                <th>Status</th>
-                                <th>Last checked</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{#services}}
-                            <tr>
-                                <td>{{name}}</td>
-                                <td>
-                                    <a href="{{service_url}}" target="_blank"
-                                        >{{service_url}}</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator {{#is_ok}}status-ok{{/is_ok}}{{^is_ok}}status-error{{/is_ok}}"
-                                    ></span>
-                                    <span>{{status_http_code}}</span>
-                                </td>
-                                <td>{{formatted_timestamp}}</td>
-                            </tr>
-                            {{/services}}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="workspace">
+                <aside class="summary" aria-label="Service status summary">
+                    <div class="metric">
+                        <span class="metric-label">Total services</span
+                        ><strong class="metric-value" id="total-count"
+                            >—</strong
+                        >
+                    </div>
+                    <div class="metric ok">
+                        <span class="metric-label">Operational</span
+                        ><strong class="metric-value" id="ok-count">—</strong>
+                    </div>
+                    <div class="metric bad">
+                        <span class="metric-label">Issues</span
+                        ><strong class="metric-value" id="error-count"
+                            >—</strong
+                        >
+                    </div>
+                </aside>
+                <section class="panel" aria-labelledby="services-heading">
+                    <div class="panel-heading-custom">
+                        <div>
+                            <h2 id="services-heading">Services overview</h2>
+                            <p>
+                                Latest recorded HTTP status for monitored
+                                endpoints.
+                            </p>
+                        </div>
+                        <input
+                            id="service-search"
+                            class="search"
+                            type="search"
+                            placeholder="Search services or URLs…"
+                            aria-label="Search services and URLs"
+                        />
+                    </div>
+                    <div class="table-wrap">
+                        <table class="services-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Service</th>
+                                    <th scope="col">Endpoint</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Last checked</th>
+                                </tr>
+                            </thead>
+                            <tbody id="services-body">
+                                {{#services}}
+                                <tr
+                                    class="service-row"
+                                    data-ok="{{#is_ok}}true{{/is_ok}}{{^is_ok}}false{{/is_ok}}"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >{{name}}</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="{{service_url}}"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="{{service_url}}"
+                                            >{{service_url}}</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        {{#is_ok}}<span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP {{status_http_code}}"
+                                            >HTTP {{status_http_code}}</span
+                                        >{{/is_ok}}{{^is_ok}}<span
+                                            class="status status-error"
+                                            aria-label="Issue detected, HTTP {{status_http_code}}"
+                                            >HTTP {{status_http_code}}</span
+                                        >{{/is_ok}}
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >{{formatted_timestamp}}</span
+                                        >
+                                    </td>
+                                </tr>
+                                {{/services}}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="empty" id="empty-results" role="status">
+                        No services match your search.
+                    </div>
+                    <div class="panel-foot">
+                        <span id="shown-count" aria-live="polite"
+                            >Service list</span
+                        ><span>Status based on latest recorded checks</span>
+                    </div>
+                </section>
             </div>
-
-            <div id="footer" class="row" style="margin-top: 20px">
-                <div class="col-md-12 text-center">
-                    Ontology Engineering Group
-                    <a href="https://oeg.fi.upm.es" target="_blank"
-                        >https://oeg.fi.upm.es</a
-                    >
-                </div>
-            </div>
-        </div>
+            <footer class="footer">
+                <span>© Ontology Engineering Group · UPM</span
+                ><span
+                    ><a
+                        href="https://oeg.fi.upm.es"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >oeg.fi.upm.es ↗</a
+                    ></span
+                >
+            </footer>
+        </main>
+        <script>
+            (function () {
+                "use strict";
+                var rows = Array.prototype.slice.call(
+                    document.querySelectorAll("#services-body .service-row"),
+                );
+                var operational = rows.filter(function (row) {
+                    return row.getAttribute("data-ok") === "true";
+                }).length;
+                document.getElementById("total-count").textContent =
+                    rows.length;
+                document.getElementById("ok-count").textContent = operational;
+                document.getElementById("error-count").textContent =
+                    rows.length - operational;
+                var search = document.getElementById("service-search");
+                var shown = document.getElementById("shown-count");
+                var empty = document.getElementById("empty-results");
+                function update() {
+                    var query = search.value.toLocaleLowerCase().trim(),
+                        count = 0;
+                    rows.forEach(function (row) {
+                        var visible =
+                            row.textContent
+                                .toLocaleLowerCase()
+                                .indexOf(query) !== -1;
+                        row.style.display = visible ? "" : "none";
+                        if (visible) count++;
+                    });
+                    shown.textContent =
+                        "Showing " + count + " of " + rows.length + " services";
+                    empty.style.display = count === 0 ? "block" : "none";
+                }
+                search.addEventListener("input", update);
+                update();
+            })();
+        </script>
     </body>
 </html>

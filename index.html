@@ -1,512 +1,1423 @@
 <!doctype html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="light" />
         <title>OEG Services Status</title>
         <link
             rel="stylesheet"
             href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
         />
         <style>
-            body {
-                padding-top: 20px;
+            :root {
+                --ink: #17253e;
+                --muted: #68778c;
+                --line: #e7ecf2;
+                --surface: #fff;
+                --bg: #f6f8fc;
+                --blue: #315ee8;
+                --green: #14805e;
+                --red: #c83d4d;
             }
-            .status-indicator {
-                display: inline-block;
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                margin-right: 8px;
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--ink);
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    "Helvetica Neue", Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.55;
+            }
+            a {
+                color: var(--blue);
+            }
+            a:hover {
+                color: #1e46bb;
+                text-decoration: none;
+            }
+            a:focus-visible,
+            input:focus-visible {
+                outline: 3px solid #94b7ff;
+                outline-offset: 2px;
+            }
+            main {
+                padding: 44px 0 60px;
+                max-width: 1120px;
+            }
+            .page-heading {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 18px;
+                margin-bottom: 22px;
+            }
+            .page-heading h1 {
+                font-size: 25px;
+                font-weight: 650;
+                letter-spacing: -0.025em;
+                margin: 0;
+            }
+            .page-heading a {
+                font-size: 13px;
+                color: var(--muted);
+            }
+            .workspace {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 190px;
+                gap: 20px;
+                align-items: start;
+            }
+            .summary {
+                grid-column: 2;
+                grid-row: 1;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                background: #fff;
+                padding: 8px 15px;
+            }
+            .metric {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+                padding: 15px 0;
+                border-bottom: 1px solid var(--line);
+            }
+            .metric:last-child {
+                border-bottom: 0;
+            }
+            .metric-label {
+                font-size: 12px;
+                color: var(--muted);
+                font-weight: 500;
+            }
+            .metric-value {
+                font-size: 22px;
+                font-weight: 650;
+                line-height: 1.2;
+                font-variant-numeric: tabular-nums;
+            }
+            .metric.ok .metric-value {
+                color: var(--green);
+            }
+            .metric.bad .metric-value {
+                color: var(--red);
+            }
+            .workspace .panel {
+                grid-column: 1;
+                grid-row: 1;
+            }
+            .panel {
+                background: #fff;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            .panel-heading-custom {
+                padding: 20px 22px 18px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+            }
+            .panel-heading-custom h2 {
+                font-size: 17px;
+                letter-spacing: -0.015em;
+                font-weight: 650;
+                margin: 0 0 4px;
+            }
+            .panel-heading-custom p {
+                font-size: 13px;
+                color: var(--muted);
+                margin: 0;
+            }
+            .search {
+                width: 260px;
+                max-width: 100%;
+                height: 39px;
+                border: 1px solid #dfe5ee;
+                border-radius: 9px;
+                padding: 8px 13px;
+                background: #fafbfe;
+                color: var(--ink);
+                font-size: 13px;
+            }
+            .table-wrap {
+                overflow-x: visible;
+            }
+            .services-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 0;
+                min-width: 0;
+                table-layout: auto;
+            }
+            .services-table thead {
+                background: #f8fafd;
+            }
+            .services-table th {
+                text-transform: uppercase;
+                font-size: 11px;
+                letter-spacing: 0.075em;
+                color: #78869a;
+                font-weight: 750;
+                padding: 14px 14px;
+                border-top: 1px solid var(--line);
+                border-bottom: 1px solid var(--line);
+            }
+            .services-table td {
+                padding: 18px 14px;
+                border-bottom: 1px solid #edf0f5;
                 vertical-align: middle;
             }
-            .status-indicator.status-ok {
-                background-color: #28a745; /* Verde: código 2xx */
+            .services-table tbody tr:last-child td {
+                border-bottom: 0;
             }
-            .status-indicator.status-error {
-                background-color: #dc3545; /* Rojo: cualquier otro código */
+            .services-table tbody tr:hover {
+                background: #fafcff;
             }
-            table.services-table th,
-            table.services-table td {
-                vertical-align: middle !important;
+            .service-name {
+                font-weight: 700;
+                color: #23334d;
+                font-size: 14px;
+            }
+            .service-url {
+                display: inline-block;
+                max-width: min(260px, 23vw);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                vertical-align: middle;
+                font-size: 13px;
+            }
+            .external {
+                font-size: 12px;
+                margin-left: 5px;
+                color: #8290a5;
+            }
+            .status {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                border-radius: 7px;
+                padding: 5px 9px;
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+            .status:before {
+                content: "";
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: currentColor;
+            }
+            .status-ok {
+                background: #eaf8f1;
+                color: var(--green);
+            }
+            .status-error {
+                background: #fff0f1;
+                color: var(--red);
+            }
+            .timestamp {
+                font-size: 13px;
+                color: var(--muted);
+                white-space: nowrap;
+            }
+            .empty {
+                padding: 32px;
+                text-align: center;
+                color: var(--muted);
+                display: none;
+            }
+            .panel-foot {
+                padding: 14px 14px;
+                border-top: 1px solid var(--line);
+                background: #fcfdff;
+                color: var(--muted);
+                font-size: 12px;
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+            }
+            .footer {
+                display: flex;
+                justify-content: space-between;
+                gap: 16px;
+                margin-top: 30px;
+                color: #78869a;
+                font-size: 12px;
+            }
+            .footer a {
+                color: #5a6b83;
+            }
+            .page-heading a {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .page-heading h1 {
+                min-width: 0;
+            }
+            .services-table th,
+            .services-table td {
+                overflow-wrap: normal;
+            }
+            .services-table td:first-child {
+                overflow-wrap: anywhere;
+            }
+            @media (max-width: 1100px) {
+                .services-table th,
+                .services-table td {
+                    padding-left: 10px;
+                    padding-right: 10px;
+                }
+                .service-url {
+                    max-width: 150px;
+                }
+            }
+            @media (max-width: 650px) {
+                .table-wrap {
+                    overflow-x: auto;
+                }
+                .services-table {
+                    min-width: 650px;
+                }
+                .page-heading {
+                    flex-wrap: wrap;
+                }
+                .page-heading a {
+                    white-space: nowrap;
+                }
+            }
+            @media (max-width: 900px) {
+                .workspace {
+                    grid-template-columns: 1fr;
+                }
+                .summary {
+                    grid-column: 1;
+                    grid-row: 1;
+                    display: grid;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    padding: 0 14px;
+                }
+                .metric {
+                    border-bottom: 0;
+                    border-right: 1px solid var(--line);
+                    padding: 12px;
+                    align-items: flex-start;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+                .metric:last-child {
+                    border-right: 0;
+                }
+                .workspace .panel {
+                    grid-column: 1;
+                    grid-row: 2;
+                }
+            }
+            @media (max-width: 767px) {
+                .container {
+                    padding-left: 16px;
+                    padding-right: 16px;
+                }
+                main {
+                    padding-top: 24px;
+                }
+                .page-heading h1 {
+                    font-size: 21px;
+                }
+                .panel-heading-custom {
+                    padding: 16px;
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+                .search {
+                    width: 100%;
+                }
+                .services-table th,
+                .services-table td {
+                    padding: 14px 18px;
+                }
+                .panel-foot {
+                    padding: 13px 18px;
+                }
+                .footer {
+                    flex-direction: column;
+                    gap: 5px;
+                }
+                .metric {
+                    padding: 12px 7px;
+                }
+                .metric-label {
+                    font-size: 11px;
+                }
+                .metric-value {
+                    font-size: 20px;
+                }
             }
         </style>
     </head>
     <body>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <h1 class="text-center">OEG Services Status</h1>
-                </div>
+        <main class="container">
+            <div class="page-heading">
+                <h1>OEG Services Status</h1>
+                <a
+                    href="https://oeg.fi.upm.es"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >Ontology Engineering Group&nbsp;↗</a
+                >
             </div>
-
-            <div class="row" style="margin-top: 20px">
-                <div class="col-md-12">
-                    <table
-                        class="table table-striped table-bordered services-table"
-                    >
-                        <thead>
-                            <tr>
-                                <th>Service</th>
-                                <th>URL</th>
-                                <th>Status</th>
-                                <th>Last checked</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>astrea</td>
-                                <td>
-                                    <a
-                                        href="https://astrea.linkeddata.es/"
-                                        target="_blank"
-                                        >https://astrea.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>autocodemeta</td>
-                                <td>
-                                    <a
-                                        href="https://autocodemeta.linkeddata.es"
-                                        target="_blank"
-                                        >https://autocodemeta.linkeddata.es</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>c2t</td>
-                                <td>
-                                    <a
-                                        href="https://c2t.linkeddata.es/"
-                                        target="_blank"
-                                        >https://c2t.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-error"
-                                    ></span>
-                                    <span>503</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>c2t-endpoint</td>
-                                <td>
-                                    <a
-                                        href="https://demo.c2t.linkeddata.es/sparql"
-                                        target="_blank"
-                                        >https://demo.c2t.linkeddata.es/sparql</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-error"
-                                    ></span>
-                                    <span>503</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>calculator</td>
-                                <td>
-                                    <a
-                                        href="https://calculator.linkeddata.es/"
-                                        target="_blank"
-                                        >https://calculator.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>cf</td>
-                                <td>
-                                    <a
-                                        href="https://query.cf.linkeddata.es/query"
-                                        target="_blank"
-                                        >https://query.cf.linkeddata.es/query</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>cf-sparql</td>
-                                <td>
-                                    <a
-                                        href="https://sparql.cf.linkeddata.es/dataset.html"
-                                        target="_blank"
-                                        >https://sparql.cf.linkeddata.es/dataset.html</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>chowlk</td>
-                                <td>
-                                    <a
-                                        href="https://chowlk.linkeddata.es/"
-                                        target="_blank"
-                                        >https://chowlk.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>fair-by-design</td>
-                                <td>
-                                    <a
-                                        href="https://w3id.org/sa-fair-by-design/"
-                                        target="_blank"
-                                        >https://w3id.org/sa-fair-by-design/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>fairos-api</td>
-                                <td>
-                                    <a
-                                        href="https://fairos.linkeddata.es"
-                                        target="_blank"
-                                        >https://fairos.linkeddata.es</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>foops</td>
-                                <td>
-                                    <a
-                                        href="https://foops.linkeddata.es/FAIR_validator.html"
-                                        target="_blank"
-                                        >https://foops.linkeddata.es/FAIR_validator.html</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>lot</td>
-                                <td>
-                                    <a
-                                        href="https://lot.linkeddata.es/"
-                                        target="_blank"
-                                        >https://lot.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-error"
-                                    ></span>
-                                    <span>408</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>lov</td>
-                                <td>
-                                    <a
-                                        href="https://lov.linkeddata.es"
-                                        target="_blank"
-                                        >https://lov.linkeddata.es</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>ontologydd</td>
-                                <td>
-                                    <a
-                                        href="https://ontoologydd.linkeddata.es/"
-                                        target="_blank"
-                                        >https://ontoologydd.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>oontology</td>
-                                <td>
-                                    <a
-                                        href="https://ontoology.linkeddata.es/"
-                                        target="_blank"
-                                        >https://ontoology.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>oops</td>
-                                <td>
-                                    <a
-                                        href="https://oops.linkeddata.es"
-                                        target="_blank"
-                                        >https://oops.linkeddata.es</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>oopsplus</td>
-                                <td>
-                                    <a
-                                        href="https://testoops.linkeddata.es/oops-0.3.0-SNAPSHOT/"
-                                        target="_blank"
-                                        >https://testoops.linkeddata.es/oops-0.3.0-SNAPSHOT/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>p2mc</td>
-                                <td>
-                                    <a
-                                        href="https://p2mc.linkeddata.es/"
-                                        target="_blank"
-                                        >https://p2mc.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>rsfc</td>
-                                <td>
-                                    <a
-                                        href="https://rsfc.linkeddata.es"
-                                        target="_blank"
-                                        >https://rsfc.linkeddata.es</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>softalias</td>
-                                <td>
-                                    <a
-                                        href="https://softalias-rs.linkeddata.es/"
-                                        target="_blank"
-                                        >https://softalias-rs.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>solarchem</td>
-                                <td>
-                                    <a
-                                        href="https://solarchem.linkeddata.es/repositories"
-                                        target="_blank"
-                                        >https://solarchem.linkeddata.es/repositories</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>somef-vider</td>
-                                <td>
-                                    <a
-                                        href="https://somef.linkeddata.es"
-                                        target="_blank"
-                                        >https://somef.linkeddata.es</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>sqoo</td>
-                                <td>
-                                    <a
-                                        href="https://software.oeg.fi.upm.es/"
-                                        target="_blank"
-                                        >https://software.oeg.fi.upm.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>sqoo-dashverse</td>
-                                <td>
-                                    <a
-                                        href="https://dashboards-software.oeg.fi.upm.es/"
-                                        target="_blank"
-                                        >https://dashboards-software.oeg.fi.upm.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>sqoo-workflows</td>
-                                <td>
-                                    <a
-                                        href="https://workflows.software-oeg.linkeddata.es/home/workflows"
-                                        target="_blank"
-                                        >https://workflows.software-oeg.linkeddata.es/home/workflows</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                            <tr>
-                                <td>themis</td>
-                                <td>
-                                    <a
-                                        href="https://themis.linkeddata.es/"
-                                        target="_blank"
-                                        >https://themis.linkeddata.es/</a
-                                    >
-                                </td>
-                                <td>
-                                    <span
-                                        class="status-indicator status-ok"
-                                    ></span>
-                                    <span>200</span>
-                                </td>
-                                <td>2026-10-05 05:55:09 UTC</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="workspace">
+                <aside class="summary" aria-label="Service status summary">
+                    <div class="metric">
+                        <span class="metric-label">Total services</span
+                        ><strong class="metric-value" id="total-count"
+                            >—</strong
+                        >
+                    </div>
+                    <div class="metric ok">
+                        <span class="metric-label">Operational</span
+                        ><strong class="metric-value" id="ok-count">—</strong>
+                    </div>
+                    <div class="metric bad">
+                        <span class="metric-label">Issues</span
+                        ><strong class="metric-value" id="error-count"
+                            >—</strong
+                        >
+                    </div>
+                </aside>
+                <section class="panel" aria-labelledby="services-heading">
+                    <div class="panel-heading-custom">
+                        <div>
+                            <h2 id="services-heading">Services overview</h2>
+                            <p>
+                                Latest recorded HTTP status for monitored
+                                endpoints.
+                            </p>
+                        </div>
+                        <input
+                            id="service-search"
+                            class="search"
+                            type="search"
+                            placeholder="Search services or URLs…"
+                            aria-label="Search services and URLs"
+                        />
+                    </div>
+                    <div class="table-wrap">
+                        <table class="services-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Service</th>
+                                    <th scope="col">Endpoint</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Last checked</th>
+                                </tr>
+                            </thead>
+                            <tbody id="services-body">
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >astrea</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://astrea.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://astrea.linkeddata.es/"
+                                            >https://astrea.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >autocodemeta</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://autocodemeta.linkeddata.es"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://autocodemeta.linkeddata.es"
+                                            >https://autocodemeta.linkeddata.es</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="false"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >c2t</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://c2t.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://c2t.linkeddata.es/"
+                                            >https://c2t.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-error"
+                                            aria-label="Issue detected, HTTP 503"
+                                            >HTTP 503</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="false"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >c2t-endpoint</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://demo.c2t.linkeddata.es/sparql"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://demo.c2t.linkeddata.es/sparql"
+                                            >https://demo.c2t.linkeddata.es/sparql</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-error"
+                                            aria-label="Issue detected, HTTP 503"
+                                            >HTTP 503</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >calculator</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://calculator.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://calculator.linkeddata.es/"
+                                            >https://calculator.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >cf</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://query.cf.linkeddata.es/query"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://query.cf.linkeddata.es/query"
+                                            >https://query.cf.linkeddata.es/query</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >cf-sparql</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://sparql.cf.linkeddata.es/dataset.html"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://sparql.cf.linkeddata.es/dataset.html"
+                                            >https://sparql.cf.linkeddata.es/dataset.html</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >chowlk</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://chowlk.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://chowlk.linkeddata.es/"
+                                            >https://chowlk.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >fair-by-design</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://w3id.org/sa-fair-by-design/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://w3id.org/sa-fair-by-design/"
+                                            >https://w3id.org/sa-fair-by-design/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >fairos-api</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://fairos.linkeddata.es"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://fairos.linkeddata.es"
+                                            >https://fairos.linkeddata.es</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >foops</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://foops.linkeddata.es/FAIR_validator.html"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://foops.linkeddata.es/FAIR_validator.html"
+                                            >https://foops.linkeddata.es/FAIR_validator.html</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="false"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >lot</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://lot.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://lot.linkeddata.es/"
+                                            >https://lot.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-error"
+                                            aria-label="Issue detected, HTTP 408"
+                                            >HTTP 408</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >lov</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://lov.linkeddata.es"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://lov.linkeddata.es"
+                                            >https://lov.linkeddata.es</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >ontologydd</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://ontoologydd.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://ontoologydd.linkeddata.es/"
+                                            >https://ontoologydd.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >oontology</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://ontoology.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://ontoology.linkeddata.es/"
+                                            >https://ontoology.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >oops</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://oops.linkeddata.es"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://oops.linkeddata.es"
+                                            >https://oops.linkeddata.es</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >oopsplus</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://testoops.linkeddata.es/oops-0.3.0-SNAPSHOT/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://testoops.linkeddata.es/oops-0.3.0-SNAPSHOT/"
+                                            >https://testoops.linkeddata.es/oops-0.3.0-SNAPSHOT/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >p2mc</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://p2mc.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://p2mc.linkeddata.es/"
+                                            >https://p2mc.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >rsfc</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://rsfc.linkeddata.es"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://rsfc.linkeddata.es"
+                                            >https://rsfc.linkeddata.es</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >softalias</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://softalias-rs.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://softalias-rs.linkeddata.es/"
+                                            >https://softalias-rs.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >solarchem</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://solarchem.linkeddata.es/repositories"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://solarchem.linkeddata.es/repositories"
+                                            >https://solarchem.linkeddata.es/repositories</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >somef-vider</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://somef.linkeddata.es"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://somef.linkeddata.es"
+                                            >https://somef.linkeddata.es</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >sqoo</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://software.oeg.fi.upm.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://software.oeg.fi.upm.es/"
+                                            >https://software.oeg.fi.upm.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >sqoo-dashverse</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://dashboards-software.oeg.fi.upm.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://dashboards-software.oeg.fi.upm.es/"
+                                            >https://dashboards-software.oeg.fi.upm.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >sqoo-workflows</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://workflows.software-oeg.linkeddata.es/home/workflows"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://workflows.software-oeg.linkeddata.es/home/workflows"
+                                            >https://workflows.software-oeg.linkeddata.es/home/workflows</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                                <tr
+                                    class="service-row"
+                                    data-ok="true"
+                                >
+                                    <td>
+                                        <span class="service-name"
+                                            >themis</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a
+                                            class="service-url"
+                                            href="https://themis.linkeddata.es/"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="https://themis.linkeddata.es/"
+                                            >https://themis.linkeddata.es/</a
+                                        ><span
+                                            class="external"
+                                            aria-hidden="true"
+                                            >↗</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status status-ok"
+                                            aria-label="Operational, HTTP 200"
+                                            >HTTP 200</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="timestamp"
+                                            >2026-10-05 05:55:09 UTC</span
+                                        >
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="empty" id="empty-results" role="status">
+                        No services match your search.
+                    </div>
+                    <div class="panel-foot">
+                        <span id="shown-count" aria-live="polite"
+                            >Service list</span
+                        ><span>Status based on latest recorded checks</span>
+                    </div>
+                </section>
             </div>
-
-            <div id="footer" class="row" style="margin-top: 20px">
-                <div class="col-md-12 text-center">
-                    Ontology Engineering Group
-                    <a href="https://oeg.fi.upm.es" target="_blank"
-                        >https://oeg.fi.upm.es</a
-                    >
-                </div>
-            </div>
-        </div>
+            <footer class="footer">
+                <span>© Ontology Engineering Group · UPM</span
+                ><span
+                    ><a
+                        href="https://oeg.fi.upm.es"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >oeg.fi.upm.es ↗</a
+                    ></span
+                >
+            </footer>
+        </main>
+        <script>
+            (function () {
+                "use strict";
+                var rows = Array.prototype.slice.call(
+                    document.querySelectorAll("#services-body .service-row"),
+                );
+                var operational = rows.filter(function (row) {
+                    return row.getAttribute("data-ok") === "true";
+                }).length;
+                document.getElementById("total-count").textContent =
+                    rows.length;
+                document.getElementById("ok-count").textContent = operational;
+                document.getElementById("error-count").textContent =
+                    rows.length - operational;
+                var search = document.getElementById("service-search");
+                var shown = document.getElementById("shown-count");
+                var empty = document.getElementById("empty-results");
+                function update() {
+                    var query = search.value.toLocaleLowerCase().trim(),
+                        count = 0;
+                    rows.forEach(function (row) {
+                        var visible =
+                            row.textContent
+                                .toLocaleLowerCase()
+                                .indexOf(query) !== -1;
+                        row.style.display = visible ? "" : "none";
+                        if (visible) count++;
+                    });
+                    shown.textContent =
+                        "Showing " + count + " of " + rows.length + " services";
+                    empty.style.display = count === 0 ? "block" : "none";
+                }
+                search.addEventListener("input", update);
+                update();
+            })();
+        </script>
     </body>
 </html>
