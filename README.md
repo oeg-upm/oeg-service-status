@@ -1,5 +1,5 @@
-
 # OEG Service Status
+
 A website for monitoring the status of OEG services.
 A minimal status page for OEG services, automatically rebuilt and published to GitHub Pages whenever the underlying services status data changes.
 
@@ -9,10 +9,10 @@ An external daemon (not part of this repository) periodically checks a set of se
 
 ```json
 {
-  "name": "autocodemeta",
-  "service_url": "https://autocodemeta.linkeddata.es",
-  "status_http_code": 200,
-  "timestamp": 1787841006000
+    "name": "autocodemeta",
+    "service_url": "https://autocodemeta.linkeddata.es",
+    "status_http_code": 200,
+    "timestamp": 1787841006000
 }
 ```
 
@@ -24,12 +24,12 @@ Whenever that file changes (or the workflow is run manually), a GitHub Action:
 
 ## Project structure
 
-| File | Purpose |
-|---|---|
-| `services_status.json` | Input data, updated by the external daemon |
-| `index_template.html` | Mustache template for the status page |
-| `generate_index.py` | Reads the JSON and renders the template into `index.html` |
-| `index.html` | Generated output (not meant to be edited by hand) |
+| File                                       | Purpose                                                                                                                |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `services_status.json`                     | Input data, updated by the external daemon                                                                             |
+| `index_template.html`                      | Mustache template for the status page                                                                                  |
+| `generate_index.py`                        | Reads the JSON and renders the template into `index.html`                                                              |
+| `index.html`                               | Generated output (not meant to be edited by hand)                                                                      |
 | `.github/workflows/update-status-page.yml` | Runs the script on every relevant commit (and manually via `workflow_dispatch`) and deploys the result to GitHub Pages |
 
 ## Running locally
@@ -44,4 +44,3 @@ This generates (or overwrites) `index.html` in the same directory, using whateve
 ## Publishing
 
 GitHub Pages is configured to deploy from **GitHub Actions** (Settings → Pages → Source), so no manual publishing step or branch push is required beyond letting the workflow run.
-
