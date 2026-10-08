@@ -1,75 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<title>{{web_title}}</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-<style>
-body {
-  padding-top: 20px;
-}
-.status-indicator {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-.status-indicator.status-ok {
-  background-color: #28a745; /* Verde: código 2xx */
-}
-.status-indicator.status-error {
-  background-color: #dc3545; /* Rojo: cualquier otro código */
-}
-table.services-table th, table.services-table td {
-  vertical-align: middle !important;
-}
-</style>
-</head>
-<body>
-<div class="container">
+    <head>
+        <title>{{web_title}}</title>
+        <link
+            rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"
+        />
+        <style>
+            body {
+                padding-top: 20px;
+            }
+            .status-indicator {
+                display: inline-block;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                margin-right: 8px;
+                vertical-align: middle;
+            }
+            .status-indicator.status-ok {
+                background-color: #28a745; /* Verde: código 2xx */
+            }
+            .status-indicator.status-error {
+                background-color: #dc3545; /* Rojo: cualquier otro código */
+            }
+            table.services-table th,
+            table.services-table td {
+                vertical-align: middle !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h1 class="text-center">{{page_title}}</h1>
+                </div>
+            </div>
 
-  <div class="row">
-    <div class="col-md-12">
-      <h1 class="text-center">{{page_title}}</h1>
-    </div>
-  </div>
+            <div class="row" style="margin-top: 20px">
+                <div class="col-md-12">
+                    <table
+                        class="table table-striped table-bordered services-table"
+                    >
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>URL</th>
+                                <th>Status</th>
+                                <th>Last checked</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#services}}
+                            <tr>
+                                <td>{{name}}</td>
+                                <td>
+                                    <a href="{{service_url}}" target="_blank"
+                                        >{{service_url}}</a
+                                    >
+                                </td>
+                                <td>
+                                    <span
+                                        class="status-indicator {{#is_ok}}status-ok{{/is_ok}}{{^is_ok}}status-error{{/is_ok}}"
+                                    ></span>
+                                    <span>{{status_http_code}}</span>
+                                </td>
+                                <td>{{formatted_timestamp}}</td>
+                            </tr>
+                            {{/services}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-  <div class="row" style="margin-top: 20px;">
-    <div class="col-md-12">
-      <table class="table table-striped table-bordered services-table">
-        <thead>
-          <tr>
-            <th>Service</th>
-            <th>URL</th>
-            <th>Status</th>
-            <th>Last checked</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#services}}
-          <tr>
-            <td>{{name}}</td>
-            <td><a href="{{service_url}}" target="_blank">{{service_url}}</a></td>
-            <td>
-              <span class="status-indicator {{#is_ok}}status-ok{{/is_ok}}{{^is_ok}}status-error{{/is_ok}}"></span>
-              <span>{{status_http_code}}</span>
-            </td>
-            <td>{{formatted_timestamp}}</td>
-          </tr>
-          {{/services}}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="footer" class="row" style="margin-top: 20px;">
-    <div class="col-md-12 text-center">
-      Ontology Engineering Group
-      <a href="https://oeg.fi.upm.es" target="_blank">https://oeg.fi.upm.es</a>
-    </div>
-  </div>
-
-</div>
-</body>
+            <div id="footer" class="row" style="margin-top: 20px">
+                <div class="col-md-12 text-center">
+                    Ontology Engineering Group
+                    <a href="https://oeg.fi.upm.es" target="_blank"
+                        >https://oeg.fi.upm.es</a
+                    >
+                </div>
+            </div>
+        </div>
+    </body>
 </html>
